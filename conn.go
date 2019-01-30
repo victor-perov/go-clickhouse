@@ -163,7 +163,7 @@ func (c *conn) query(ctx context.Context, query string, args []driver.Value) (dr
 	if atomic.LoadInt32(&c.closed) != 0 {
 		return nil, driver.ErrBadConn
 	}
-	req, err := c.buildRequest(query, args, true)
+	req, err := c.buildRequest(ctx, query, args, true)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (c *conn) exec(ctx context.Context, query string, args []driver.Value) (dri
 	if atomic.LoadInt32(&c.closed) != 0 {
 		return nil, driver.ErrBadConn
 	}
-	req, err := c.buildRequest(query, args, false)
+	req, err := c.buildRequest(ctx, query, args, false)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func (c *conn) doRequest(ctx context.Context, req *http.Request) (io.ReadCloser,
 	return resp.Body, nil
 }
 
-func (c *conn) buildRequest(query string, params []driver.Value, readonly bool) (*http.Request, error) {
+func (c *conn) buildRequest(ctx context.Context, query string, params []driver.Value, readonly bool) (*http.Request, error) {
 	var (
 		method string
 		err    error
@@ -239,6 +239,18 @@ func (c *conn) buildRequest(query string, params []driver.Value, readonly bool) 
 	if err == nil && c.user != nil {
 		p, _ := c.user.Password()
 		req.SetBasicAuth(c.user.Username(), p)
+	}
+	if ctx != nil {
+		reqQuery := req.URL.Query()
+		quotaKey, ok := ctx.Value("quota_key").(string)
+		if ok {
+			reqQuery.Add("quota_key", quotaKey)
+		}
+		queryId, ok := ctx.Value("query_id").(string)
+		if ok && len(queryId) > 0 {
+			reqQuery.Add("query_id", queryId)
+		}
+		req.URL.RawQuery = reqQuery.Encode()
 	}
 
 	return req, err
