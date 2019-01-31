@@ -15,6 +15,11 @@ import (
 	"time"
 )
 
+const (
+	QueryID  = "query_id"
+	QuotaKey = "quota_key"
+)
+
 // conn implements an interface sql.Conn
 type conn struct {
 	url                *url.URL
@@ -242,13 +247,13 @@ func (c *conn) buildRequest(ctx context.Context, query string, params []driver.V
 	}
 	if ctx != nil {
 		reqQuery := req.URL.Query()
-		quotaKey, ok := ctx.Value("quota_key").(string)
+		quotaKey, ok := ctx.Value(QuotaKey).(string)
 		if ok {
-			reqQuery.Add("quota_key", quotaKey)
+			reqQuery.Add(QuotaKey, quotaKey)
 		}
-		queryId, ok := ctx.Value("query_id").(string)
-		if ok && len(queryId) > 0 {
-			reqQuery.Add("query_id", queryId)
+		queryID, ok := ctx.Value(QueryID).(string)
+		if ok && len(queryID) > 0 {
+			reqQuery.Add(QueryID, queryID)
 		}
 		req.URL.RawQuery = reqQuery.Encode()
 	}
