@@ -51,6 +51,8 @@ Clickhouse supports setting
 [quota_key](https://clickhouse.yandex/docs/en/operations/quotas/) for each
 query. The database driver provides ability to set these parameters as well.
 
+There are constants `QueryID` and `QuotaKey` for correct setting these params.
+
 `quota_key` could be set as empty string, but `query_id` - does not. Keep in
 mind, that setting same `query_id` could produce exception or replace already
 running query depending on current Clickhouse settings. See
@@ -176,7 +178,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	rows, err := connect.QueryContext(context.WithValue(ctx, "query_id", "dummy-query-id"), `
+	rows, err := connect.QueryContext(context.WithValue(ctx, clickhouse.QueryID, "dummy-query-id"), `
 		SELECT
 			country_code,
 			os_id,

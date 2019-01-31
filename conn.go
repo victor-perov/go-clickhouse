@@ -15,9 +15,16 @@ import (
 	"time"
 )
 
+type key int
+
 const (
-	QueryID  = "query_id"
-	QuotaKey = "quota_key"
+	// QueryID uses for setting query_id request param for request to Clickhouse
+	QueryID key = iota
+	// QuotaKey uses for setting quota_key request param for request to Clickhouse
+	QuotaKey
+
+	quotaKeyParamName = "quota_key"
+	queryIDParamName  = "query_id"
 )
 
 // conn implements an interface sql.Conn
@@ -249,11 +256,11 @@ func (c *conn) buildRequest(ctx context.Context, query string, params []driver.V
 		reqQuery := req.URL.Query()
 		quotaKey, ok := ctx.Value(QuotaKey).(string)
 		if ok {
-			reqQuery.Add(QuotaKey, quotaKey)
+			reqQuery.Add(quotaKeyParamName, quotaKey)
 		}
 		queryID, ok := ctx.Value(QueryID).(string)
 		if ok && len(queryID) > 0 {
-			reqQuery.Add(QueryID, queryID)
+			reqQuery.Add(queryIDParamName, queryID)
 		}
 		req.URL.RawQuery = reqQuery.Encode()
 	}

@@ -202,7 +202,7 @@ func (s *connSuite) TestBuildRequestReadWriteWOAuth() {
 func (s *connSuite) TestBuildRequestWithQueryId() {
 	cn := newConn(NewConfig())
 	testCases := []struct {
-		queryId  string
+		queryID  string
 		expected string
 	}{
 		{
@@ -231,7 +231,7 @@ func (s *connSuite) TestBuildRequestWithQueryId() {
 		},
 	}
 	for _, tc := range testCases {
-		req, err := cn.buildRequest(context.WithValue(context.Background(), "query_id", tc.queryId), "INSERT 1 INTO num", nil, false)
+		req, err := cn.buildRequest(context.WithValue(context.Background(), QueryID, tc.queryID), "INSERT 1 INTO num", nil, false)
 		if s.NoError(err) {
 			s.Equal(http.MethodPost, req.Method)
 			s.Equal(tc.expected, req.URL.String())
@@ -270,7 +270,7 @@ func (s *connSuite) TestBuildRequestWithQuotaKey() {
 		},
 	}
 	for _, tc := range testCases {
-		req, err := cn.buildRequest(context.WithValue(context.Background(), "quota_key", tc.quotaKey), "INSERT 1 INTO num", nil, false)
+		req, err := cn.buildRequest(context.WithValue(context.Background(), QuotaKey, tc.quotaKey), "INSERT 1 INTO num", nil, false)
 		if s.NoError(err) {
 			s.Equal(http.MethodPost, req.Method)
 			s.Equal(tc.expected, req.URL.String())
@@ -281,7 +281,7 @@ func (s *connSuite) TestBuildRequestWithQueryIdAndQuotaKey() {
 	cn := newConn(NewConfig())
 	testCases := []struct {
 		quotaKey string
-		queryId  string
+		queryID  string
 		expected string
 	}{
 		{
@@ -317,8 +317,8 @@ func (s *connSuite) TestBuildRequestWithQueryIdAndQuotaKey() {
 	}
 	for _, tc := range testCases {
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, "quota_key", tc.quotaKey)
-		ctx = context.WithValue(ctx, "query_id", tc.queryId)
+		ctx = context.WithValue(ctx, QuotaKey, tc.quotaKey)
+		ctx = context.WithValue(ctx, QueryID, tc.queryID)
 		req, err := cn.buildRequest(ctx, "INSERT 1 INTO num", nil, false)
 		if s.NoError(err) {
 			s.Equal(http.MethodPost, req.Method)
