@@ -253,18 +253,19 @@ func (c *conn) buildRequest(ctx context.Context, query string, params []driver.V
 		req.SetBasicAuth(c.user.Username(), p)
 	}
 	if ctx != nil {
-		reqQuery := req.URL.Query()
-		quotaKey, ok := ctx.Value(QuotaKey).(string)
-		if ok {
-			reqQuery.Add(quotaKeyParamName, quotaKey)
+		quotaKey, quotaOk := ctx.Value(QuotaKey).(string)
+		queryID, queryOk := ctx.Value(QueryID).(string)
+		if quotaOk || queryOk {
+			reqQuery := req.URL.Query()
+			if quotaOk {
+				reqQuery.Add(quotaKeyParamName, quotaKey)
+			}
+			if queryOk && len(queryID) > 0 {
+				reqQuery.Add(queryIDParamName, queryID)
+			}
+			req.URL.RawQuery = reqQuery.Encode()
 		}
-		queryID, ok := ctx.Value(QueryID).(string)
-		if ok && len(queryID) > 0 {
-			reqQuery.Add(queryIDParamName, queryID)
-		}
-		req.URL.RawQuery = reqQuery.Encode()
 	}
-
 	return req, err
 }
 

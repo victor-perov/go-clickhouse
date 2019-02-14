@@ -229,6 +229,10 @@ func (s *connSuite) TestBuildRequestWithQueryId() {
 			"^",
 			cn.url.String() + "&query_id=%5E",
 		},
+		{
+			"213&query=select 1",
+			cn.url.String() + "&query_id=213%26query%3Dselect+1",
+		},
 	}
 	for _, tc := range testCases {
 		req, err := cn.buildRequest(context.WithValue(context.Background(), QueryID, tc.queryID), "INSERT 1 INTO num", nil, false)
@@ -268,9 +272,13 @@ func (s *connSuite) TestBuildRequestWithQuotaKey() {
 			"^",
 			cn.url.String() + "&quota_key=%5E",
 		},
+		{
+			"213&query=select 1",
+			cn.url.String() + "&quota_key=213%26query%3Dselect+1",
+		},
 	}
 	for _, tc := range testCases {
-		req, err := cn.buildRequest(context.WithValue(context.Background(), QuotaKey, tc.quotaKey), "INSERT 1 INTO num", nil, false)
+		req, err := cn.buildRequest(context.WithValue(context.Background(), QuotaKey, tc.quotaKey), "SELECT 1", nil, false)
 		if s.NoError(err) {
 			s.Equal(http.MethodPost, req.Method)
 			s.Equal(tc.expected, req.URL.String())
@@ -319,7 +327,7 @@ func (s *connSuite) TestBuildRequestWithQueryIdAndQuotaKey() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, QuotaKey, tc.quotaKey)
 		ctx = context.WithValue(ctx, QueryID, tc.queryID)
-		req, err := cn.buildRequest(ctx, "INSERT 1 INTO num", nil, false)
+		req, err := cn.buildRequest(ctx, "SELECT 1", nil, false)
 		if s.NoError(err) {
 			s.Equal(http.MethodPost, req.Method)
 			s.Equal(tc.expected, req.URL.String())
